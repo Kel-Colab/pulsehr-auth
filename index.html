@@ -57,7 +57,7 @@
   <script>
     var CONFIG = {
       clientId: '386712167640-0h542uv6mmb8jqn1e9vgfnfqasd8mrpp.apps.googleusercontent.com',
-      defaultReturnTo: 'https://script.google.com/a/macros/3wc4life.com/s/AKfycbzviAygeGOdwRnjYffWI9oqaccUT35Ey52DsHEF5NOgoE8qZwSWbRpZVP-hKlHBoreOHw/exec'
+      defaultReturnTo: 'https://script.google.com/a/3wc4life.com/macros/s/AKfycbw0jLt42p2HNQXH87mIcisl-on-Kbw7BLmf2xpsjZHv/exec'
     };
 
     function byId(id) {
@@ -80,18 +80,18 @@
     }
 
     function pickReturnToUrl() {
-  var requested = getParam('return_to') || CONFIG.defaultReturnTo;
-  if (!requested) return '';
-  try {
-    var parsed = new URL(requested);
-    if (parsed.protocol !== 'https:') return '';
-    if (parsed.hostname !== 'script.google.com') return '';
-    if (parsed.pathname.indexOf('/macros/s/') === -1) return ''; // ← flexible check
-    return parsed.origin + parsed.pathname;
-  } catch (e) {
-    return '';
-  }
-}
+      var requested = getParam('return_to') || CONFIG.defaultReturnTo;
+      if (!requested) return '';
+      try {
+        var parsed = new URL(requested);
+        if (parsed.protocol !== 'https:') return '';
+        if (parsed.hostname !== 'script.google.com') return '';
+        if (parsed.pathname.indexOf('/macros/s/') === -1) return '';
+        return parsed.origin + parsed.pathname;
+      } catch (e) {
+        return '';
+      }
+    }
 
     function handleCredentialResponse(response) {
       if (!response || !response.credential) {
