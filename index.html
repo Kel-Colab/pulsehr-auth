@@ -87,7 +87,7 @@
         var parsed = new URL(requested);
         if (parsed.protocol !== 'https:') return '';
         if (parsed.hostname !== 'script.google.com') return '';
-        if (parsed.pathname.indexOf('/macros/') !== 0) return '';
+        if (parsed.pathname.indexOf('/macros/') !== 0 && parsed.pathname.indexOf('/a/macros/') !== 0) return '';
         return parsed.origin + parsed.pathname;
       } catch (e) {
         return '';
