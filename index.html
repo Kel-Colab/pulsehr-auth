@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PulseHR Sign-In</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root { --bg:#f8fafc; --card:#fff; --text:#0f172a; --muted:#64748b; --accent:#2563eb; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .card {
+      background: var(--card);
+      width: 100%;
+      max-width: 420px;
+      border-radius: 14px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+      padding: 24px;
+      text-align: center;
+    }
+    .logo { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+    .logo span { color: var(--accent); }
+    .subtitle { margin: 0 0 18px; color: var(--muted); font-size: 14px; }
+    .error {
+      display: none;
+      margin: 0 0 14px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      text-align: left;
+    }
+    .help { margin-top: 14px; font-size: 12px; color: var(--muted); line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="logo"><span>Pulse</span>HR</div>
+    <p class="subtitle">Sign in with your Google account</p>
+    <div id="error" class="error"></div>
+    <div id="google-btn" style="display:flex;justify-content:center;min-height:44px;"></div>
+    <p class="help">Access is granted only to active staff emails in PulseHR.</p>
+  </main>
+
+  <script>
+    var CONFIG = {
+      clientId: '386712167640-bb5g12m9182dt0up0a86bh634eloq8e5.apps.googleusercontent.com',
+      defaultReturnTo: 'https://script.google.com/a/macros/3wc4life.com/s/AKfycbxd2kpLnKGayNFEGYU0CaVA1Ne7G9cSW8CwNfnprbw/exec'
+    };
+
+    function byId(id) {
+      return document.getElementById(id);
+    }
+
+    function showError(msg) {
+      var el = byId('error');
+      el.style.display = 'block';
+      el.textContent = msg;
+    }
+
+    function getParam(name) {
+      try {
+        var url = new URL(window.location.href);
+        return url.searchParams.get(name);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function pickReturnToUrl() {
+      var requested = getParam('return_to') || CONFIG.defaultReturnTo;
+      if (!requested) return '';
+
+      try {
+        var parsed = new URL(requested);
+        if (parsed.protocol !== 'https:') return '';
+        if (parsed.hostname !== 'script.google.com') return '';
+        if (parsed.pathname.indexOf('/macros/') !== 0) return '';
+        return parsed.origin + parsed.pathname;
+      } catch (e) {
+        return '';
+      }
+    }
+
+    function handleCredentialResponse(response) {
+      if (!response || !response.credential) {
+        showError('Google sign-in failed. Please try again.');
+        return;
+      }
+
+      var returnTo = pickReturnToUrl();
+      if (!returnTo) {
+        showError('Return URL is missing or invalid. Ask admin to check AUTH_PORTAL_URL/defaultReturnTo.');
+        return;
+      }
+
+      var sep = returnTo.indexOf('?') === -1 ? '?' : '&';
+      window.location.assign(returnTo + sep + 'id_token=' + encodeURIComponent(response.credential));
+    }
+
+    function initGisWhenReady(retries) {
+      retries = retries || 0;
+
+      if (!CONFIG.clientId || CONFIG.clientId.indexOf('.apps.googleusercontent.com') === -1) {
+        showError('Portal is not configured. Set CONFIG.clientId to your OAuth Web Client ID.');
+        return;
+      }
+
+      if (!window.google || !google.accounts || !google.accounts.id) {
+        if (retries < 20) {
+          return setTimeout(function () { initGisWhenReady(retries + 1); }, 250);
+        }
+        showError('Could not load Google Sign-In. Refresh and try again.');
+        return;
+      }
+
+      google.accounts.id.initialize({
+        client_id: CONFIG.clientId,
+        callback: handleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true
+      });
+
+      google.accounts.id.renderButton(byId('google-btn'), {
+        type: 'standard',
+        size: 'large',
+        text: 'signin_with',
+        theme: 'outline',
+        shape: 'rectangular',
+        width: 320
+      });
+    }
+
+    initGisWhenReady();
+  </script>
+</body>
+</html>
